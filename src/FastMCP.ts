@@ -1119,6 +1119,14 @@ export class FastMCPSession<
     }
   }
 
+  /**
+   * Update the session's authentication context.
+   * Called by mcp-proxy when a new token is validated on subsequent requests.
+   */
+  public updateAuth(auth: T): void {
+    this.#auth = auth;
+  }
+
   public async connect(transport: Transport) {
     if (this.#server.transport) {
       throw new UnexpectedStateError("Server is already connected");
