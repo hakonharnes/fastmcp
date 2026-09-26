@@ -2947,11 +2947,21 @@ function parseBasicAuthHeader(
  * RFC 9728 §3.1: the well-known path goes between the host and the resource's
  * path, so `https://host/mcp` is described at
  * `https://host/.well-known/oauth-protected-resource/mcp`.
+ *
+ * Matches mcp-proxy's challenge link, which answers most 401s: the scheme is
+ * kept for non-http resources such as `mcp://my-server`, whose `origin` is
+ * `"null"`, and an unparseable resource falls back instead of throwing.
  */
 function protectedResourceMetadataUrl(resource: string): string {
-  const url = new URL(resource);
-  const path = url.pathname.replace(/\/+$/, "");
-  return `${url.origin}/.well-known/oauth-protected-resource${path}`;
+  let url: URL;
+  try {
+    url = new URL(resource);
+  } catch {
+    return `${resource}/.well-known/oauth-protected-resource`;
+  }
+  const path = url.pathname === "/" ? "" : url.pathname;
+  url.pathname = `/.well-known/oauth-protected-resource${path}`;
+  return url.toString();
 }
 
 /**
